@@ -1,0 +1,21 @@
+@import "tailwindcss";
+:root {
+  --bg-color: #f8fafc;
+  --text-color: #0f172a;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --primary: #3b82f6;
+}
+
+.dark {
+  --bg-color: #0f172a;
+  --text-color: #f1f5f9;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  --primary: #60a5fa;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}

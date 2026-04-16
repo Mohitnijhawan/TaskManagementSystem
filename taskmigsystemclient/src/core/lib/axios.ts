@@ -1,0 +1,51 @@
+import axios from "axios";
+import { API_URL} from "../../constants/app-urls";
+import { authToken } from "../../constants/storage-names";
+import { toast } from "react-toastify";
+
+export const apiClient=axios.create({
+    baseURL:API_URL
+})
+apiClient.interceptors.request.use(async config=>{
+    const token= localStorage.getItem(authToken)
+        if(token){
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+    return config;
+}, (error) => {
+   
+  return Promise.reject(error);
+}
+)
+
+apiClient.interceptors.response.use(
+       function (response) {
+       return  response;
+      },
+
+    function  (error) {
+       if (error.response && error.response.status === 400) {
+          toast.error('Bad Request: ' + (error.response.data.problemDetails?.title || 'Invalid request'))
+        }
+        else if (error.response && error.response.status === 401) {
+         
+                toast.error('Unauthorized: ' + (error.response.data.problemDetails?.title || 'You are not authorized to access this resource. Please login again.'))
+           
+             window.location.href = '/login';
+        }
+         else if (error.response && error.response.status === 403) {
+          toast.error('Forbidden: ' + (error.response.data.problemDetails?.title || 'You do not have permission to access this resource.'))
+        }
+        else if (error.response && error.response.status === 404) {
+          toast.error('Not Found: ' + (error.response.data.problemDetails?.title || 'The requested resource was not found.'))
+        }
+       
+        else if (error.response && error.response.status >= 400 && error.response.status < 500) {
+          toast.error('Client Error: ' + (error.response.data.problemDetails?.title || 'An error occurred with your request. Please check and try again.'))
+        }
+        else if (error.response && error.response.status >= 500) {
+          toast.error('Server Error: ' + (error.response.data.problemDetails?.title || 'An error occurred on the server. Please try again later.'))
+        }
+        return Promise.reject(error);
+      }
+    );

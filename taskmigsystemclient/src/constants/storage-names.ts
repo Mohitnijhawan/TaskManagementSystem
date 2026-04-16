@@ -1,0 +1,1 @@
+export const authToken = "task_management_system_auth_token";
