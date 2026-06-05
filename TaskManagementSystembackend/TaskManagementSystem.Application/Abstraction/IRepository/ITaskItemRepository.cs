@@ -12,5 +12,7 @@ namespace TaskManagementSystem.Application.Abstraction.IRepository
         public Task<TaskResponse> GetTaskById(Guid userid,Guid taskId);
         public Task<TaskResponse> GetById(Guid userid,Guid taskId);
 
+        public Task<TaskItem?> GetEntityById(Guid userId, Guid taskId);
+
     }
 }

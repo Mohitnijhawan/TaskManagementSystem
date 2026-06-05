@@ -18,78 +18,90 @@ namespace TaskManagementSystem.Application.Services
     {
         public async Task<Result<TaskResponse>> CreateTask(TaskRequest model)
         {
-            var task=mapper.Map<TaskItem>(model);
-            task.UserId = httpContextService.GetUserId();
-            var response = mapper.Map<TaskResponse>(task);
+            var userId = httpContextService.GetUserId();
+
+            var task = mapper.Map<TaskItem>(model);
+            task.UserId = userId;
+
             await taskItemRepository.AddAsync(task);
-            var returnVal=await unitOfWork.SaveChangesAsync();
-            if(returnVal > 0)
-            {
-                return Result<TaskResponse>.Success(response, 200, "Task Added Successfully");
-            }
-            return Result<TaskResponse>.Failure("Their is an error please try again later...",StatusCodes.Status400BadRequest);
+            var result = await unitOfWork.SaveChangesAsync();
+
+            if (result <= 0)
+                return Result<TaskResponse>.Failure("Error while creating task", StatusCodes.Status400BadRequest);
+
+            var response = mapper.Map<TaskResponse>(task);
+
+            return Result<TaskResponse>.Success(response, 200, "Task Added Successfully");
         }
 
-        public async Task<Result<TaskResponse>> DeleteTask(Guid taskid)
+        public async Task<Result<TaskResponse>> DeleteTask(Guid taskId)
         {
-            var userid = httpContextService.GetUserId();
-            var taskResponse = await taskItemRepository.GetById(userid,taskid);
-            if(taskResponse is null)
-            {
-                return Result<TaskResponse>.Failure("No task found");
-            }
+            var userId = httpContextService.GetUserId();
 
-            var taskitem = mapper.Map<TaskItem>(taskResponse);
-            await taskItemRepository.DeleteIdAsync(taskid);
-            var returnVal=await unitOfWork.SaveChangesAsync();
-            if(returnVal > 0)
-            {
-                return Result<TaskResponse>.Success(taskResponse, "Task Deleted Successfully");
-            }
-            return Result<TaskResponse>.Failure("Their is an problem try again later....");
+            var task = await taskItemRepository.GetEntityById(userId, taskId);
 
+            if (task == null)
+                return Result<TaskResponse>.Failure("Task not found", StatusCodes.Status404NotFound);
+
+            await taskItemRepository.DeleteIdAsync(taskId);
+
+            var result = await unitOfWork.SaveChangesAsync();
+
+            if (result <= 0)
+                return Result<TaskResponse>.Failure("Error while deleting task");
+
+            var response = mapper.Map<TaskResponse>(task);
+
+            return Result<TaskResponse>.Success(response, 200, "Task deleted successfully");
         }
 
         public async Task<Result<IEnumerable<TaskResponse>>> GetAllTasks()
         {
-            var userid = httpContextService.GetUserId();
-            var tasks = await taskItemRepository.GetTasks(userid);
-            if(tasks is not null)
-            {
-                var response = mapper.Map<IEnumerable<TaskResponse>>(tasks);
-                return Result<IEnumerable<TaskResponse>>.Success(response, 200, "Task Fetched");
-            }
-            return Result<IEnumerable<TaskResponse>>.Failure("Something went wrong....");
+            var userId = httpContextService.GetUserId();
 
+            var tasks = await taskItemRepository.GetTasks(userId);
+
+            var response = mapper.Map<IEnumerable<TaskResponse>>(tasks);
+
+            return Result<IEnumerable<TaskResponse>>.Success(response, 200, "Tasks fetched successfully");
         }
 
-        public async Task<Result<TaskResponse>> GetTasksById(Guid taskid)
+        public async Task<Result<TaskResponse>> GetTasksById(Guid taskId)
         {
             var userId = httpContextService.GetUserId();
-            var task = await taskItemRepository.GetById(userId, taskid);
-            if(task is not null)
-            {
-                return Result<TaskResponse>.Success(task, 200, $@"Task with specific {taskid} fetched");
-            }
 
-            return Result<TaskResponse>.Failure("Their is an error try again later...");
+            var task = await taskItemRepository.GetEntityById(userId, taskId);
+
+            if (task == null)
+                return Result<TaskResponse>.Failure("Task not found", StatusCodes.Status404NotFound);
+
+            var response = mapper.Map<TaskResponse>(task);
+
+            return Result<TaskResponse>.Success(response, 200, "Task fetched successfully");
         }
 
         public async Task<Result<TaskResponse>> UpdateTask(TaskUpdateRequest model)
         {
             var userId = httpContextService.GetUserId();
-           var taskResponse= await taskItemRepository.GetById(userId, model.Id);
-            var task = mapper.Map<TaskItem>(taskResponse);
-            mapper.Map(model, task);
-            task.UserId=userId;
-            await taskItemRepository.UpdateAsync(task);
-          var returnVal =  await unitOfWork.SaveChangesAsync();
-            if(returnVal > 0)
-            {
-                return Result<TaskResponse>.Success(taskResponse,200, "Task Updated Successfully");
-            }
-            return Result<TaskResponse>.Failure("Their is an error try again later...");
 
+            var task = await taskItemRepository.GetEntityById(userId, model.Id);
+
+            if (task == null)
+                return Result<TaskResponse>.Failure("Task not found", StatusCodes.Status404NotFound);
+
+            mapper.Map(model, task); 
+            task.UserId = userId;
+
+            await taskItemRepository.UpdateAsync(task);
+
+            var result = await unitOfWork.SaveChangesAsync();
+
+            if (result <= 0)
+                return Result<TaskResponse>.Failure("Error while updating task");
+
+            var response = mapper.Map<TaskResponse>(task);
+
+            return Result<TaskResponse>.Success(response, 200, "Task updated successfully");
         }
     }
 }

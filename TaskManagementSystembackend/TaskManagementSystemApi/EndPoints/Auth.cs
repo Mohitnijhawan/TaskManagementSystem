@@ -24,32 +24,32 @@ namespace TaskManagementSystemApi.EndPoints
 
             }).DisableAntiforgery();
 
-            app.MapGet("auth/google", async (HttpContext context) =>
-            {
-                var properties = new AuthenticationProperties
-                {
-                    RedirectUri = "/auth/google-response"
-                };
+            //app.MapGet("auth/google", async (HttpContext context) =>
+            //{
+            //    var properties = new AuthenticationProperties
+            //    {
+            //        RedirectUri = "/auth/google-response"
+            //    };
 
-                await context.ChallengeAsync(GoogleDefaults.AuthenticationScheme, properties);
-            });
+            //    await context.ChallengeAsync(GoogleDefaults.AuthenticationScheme, properties);
+            //});
 
-                                app.MapGet("auth/google-response", async (
-                        HttpContext context,
-                        IAuthService authService) =>
-            {
-                var result = await context.AuthenticateAsync();
+            //                    app.MapGet("auth/google-response", async (
+            //            HttpContext context,
+            //            IAuthService authService) =>
+            //{
+            //    var result = await context.AuthenticateAsync();
 
-                if (!result.Succeeded)
-                    return Results.BadRequest("Google auth failed");
+            //    if (!result.Succeeded)
+            //        return Results.BadRequest("Google auth failed");
 
-                var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
-                var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
+            //    var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            //    var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
 
-                var response = await authService.GoogleLogin(email!, name!);
+            //    var response = await authService.GoogleLogin(email!, name!);
 
-                return Results.Redirect($"http://localhost:5173/oauth-success?token={response?.Value?.Token}");
-            });
+            //    return Results.Redirect($"http://localhost:5173/oauth-success?token={response?.Value?.Token}");
+            //});
 
             app.MapPut("block-user/{id:guid}", async (Guid id, IAuthService authService) =>
             {

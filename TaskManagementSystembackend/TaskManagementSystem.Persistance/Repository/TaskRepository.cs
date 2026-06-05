@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Application.Abstraction.IRepository;
 using TaskManagementSystem.Application.RRModel.Task;
 using TaskManagementSystem.Domain.Entities;
@@ -38,6 +39,12 @@ namespace TaskManagementSystem.Persistance.Repository
                 where UserId=@userid and id =@taskId";
 
             return await FirstOrDefaultAsync<TaskResponse>(query, new { userid, taskId });
+        }
+
+        public async Task<TaskItem?> GetEntityById(Guid userId, Guid taskId)
+        {
+            return await context.TaskItems.FirstOrDefaultAsync(x => x.UserId == userId && x.Id == taskId);
+
         }
     }
 }
